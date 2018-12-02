@@ -19,25 +19,24 @@ namespace Automatas.POCO
         private Transition[] W { get; set; }
         public string[] Comps { get; set; }
         private string CurrentNodeOnGraph { get; set; } = string.Empty;
-        public bool isValid { get; set; } = true;
+        public bool IsValid { get; set; } = true;
         public FiveTuple() { }
         public FiveTuple(string rawData)
         {
             rawData = rawData.Replace("\r", "");
             var splittedData = rawData.Split('\n');
             var ads = splittedData[0].Substring(splittedData[0].Length - 2);
-            isValid = (splittedData[0].Substring(0, 3) == "Q={" && splittedData[0].Substring(splittedData[0].Length - 1) == "}" &&
-                splittedData[1].Substring(0, 3) == "F={" && splittedData[1].Substring(splittedData[1].Length - 1) == "}" &&
-                splittedData[2].Substring(0, 2) == "i=" &&
-                splittedData[3].Substring(0, 2) == "A=" &&
-                splittedData[4].Substring(0, 3) == "W={") && splittedData[4].Substring(splittedData[4].Length - 2) == ")}";
+            IsValid = true;
             Q = Regex.Match(splittedData[0], @"(?<=\{).*(?=\})").ToString().Split(',');
             F = Regex.Match(splittedData[1], @"(?<=\{).*(?=\})").ToString().Split(',');
-            I = Regex.Match(splittedData[2], @"(?<=i=)\w*").ToString();
-            A = new []{ Regex.Match(splittedData[3], @"(?<=A=)\w*").ToString() };
-            if (string.IsNullOrEmpty(A[0]))
+            I = Regex.Match(splittedData[2], @"(?<=i=).*").ToString();
+            var rawA = splittedData[3];
+            if (rawA.Substring(0, 3) == "A={" && rawA.Substring(rawA.Length - 1) == "}")
             {
-                A = Regex.Match(splittedData[3], @"(?<=\{).*(?=\})").ToString().Split(',');
+                A = Regex.Match(rawA, @"(?<=\{).*(?=\})").ToString().Split(',');
+            } else
+            {
+                A = new[] { Regex.Match(rawA, @"(?<=A=).*").ToString() };
             }
             var regexW = Regex.Matches(splittedData[4], @"(?<=\().+?(?=\))");
             W = new Transition[regexW.Count];
@@ -61,7 +60,7 @@ namespace Automatas.POCO
         /// <summary>
         /// Matriz AFN
         /// </summary>
-        public List<List<string>> toOutputMatrix()
+        public List<List<string>> ToOutputMatrix()
         {
             var matrix = new List<List<string>>();
 
@@ -91,14 +90,14 @@ namespace Automatas.POCO
             }
             return matrix;
         }
-        public string toGraph()
+        public string ToGraph()
         {
             var timeOnStart = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             timeOnStart += ".dot";
             var dot = "";
             dot += "digraph G {" +
                     "rankdir=\"LR\";\n" +
-                    "node [shape = none] i;\n";
+                    "node [shape = none] \"i\";\n";
 
             bool flag;
             foreach (var i in Q)
@@ -112,56 +111,66 @@ namespace Automatas.POCO
                         break;
                     }
                 }
+                var formattedItem = $"\"{i}\"";
                 if(flag)
                 {
                     if(i.Equals(CurrentNodeOnGraph))
                     {
-                        dot += "node [shape = doublecircle color = blue] " + i + ";\n";
+                        dot += "node [shape = doublecircle color = blue] " + formattedItem + ";\n";
                     }
                     else
                     {
-                        dot += "node [shape = doublecircle color = black] " + i + ";\n";
+                        dot += "node [shape = doublecircle color = black] " + formattedItem + ";\n";
                     }
                 } else
                 {
                     if (i.Equals(CurrentNodeOnGraph))
                     {
-                        dot += "node [shape = circle color = blue] " + i + ";\n";
+                        dot += "node [shape = circle color = blue] " + formattedItem + ";\n";
                     }
                     else
                     {
-                        dot += "node [shape = circle color = black] " + i + ";\n";
+                        dot += "node [shape = circle color = black] " + formattedItem + ";\n";
                     }
                 }
             }
-            dot += "i -> " + Q[0] + ";\n";
+            dot += "\"i\" -> \"" + Q[0] + "\";\n";
             foreach (var a in W)
             {
-                switch (a.EdgeColorStatus)
+                var formattedItem = new Transition
+                {
+                    Begin = $"\"{a.Begin}\"",
+                    EdgeColorStatus = a.EdgeColorStatus,
+                    EdgeTimesUsed = a.EdgeTimesUsed,
+                    End = $"\"{a.End}\"",
+                    NodeStatus = a.NodeStatus,
+                    Symbol = a.Symbol
+                };
+                switch (formattedItem.EdgeColorStatus)
                 {
                     case -1:
                     {
-                        dot += a.Begin + " -> " + a.End + "[label = \" " + a.Symbol + "\"];\n";
+                        dot += formattedItem.Begin + " -> " + formattedItem.End + "[label = \" " + formattedItem.Symbol + "\"];\n";
                         break;
                     }
                     case 0:
                     {
-                        dot += a.Begin + " -> " + a.End + "[label = \" " + a.Symbol + "\" color = indianred1];\n";
+                        dot += formattedItem.Begin + " -> " + formattedItem.End + "[label = \" " + formattedItem.Symbol + "\" color = indianred1];\n";
                         break;
                     }
                     case 1:
                     {
-                        dot += a.Begin + " -> " + a.End + "[label = \" " + a.Symbol + "\" color = darkolivegreen1];\n";
+                        dot += formattedItem.Begin + " -> " + formattedItem.End + "[label = \" " + formattedItem.Symbol + "\" color = darkolivegreen1];\n";
                         break;
                     }
                     case 2:
                     {
-                        dot += a.Begin + " -> " + a.End + "[label = \" " + a.Symbol + ":" + a.EdgeTimesUsed.ToString() + "\" color = indianred4];\n";
+                        dot += formattedItem.Begin + " -> " + formattedItem.End + "[label = \" " + formattedItem.Symbol + ":" + formattedItem.EdgeTimesUsed.ToString() + "\" color = indianred4];\n";
                         break;
                     }
                     case 3:
                     {
-                        dot += a.Begin + " -> " + a.End + "[label = \" " + a.Symbol + ":" + a.EdgeTimesUsed.ToString() + "\" color = darkolivegreen4];\n";
+                        dot += formattedItem.Begin + " -> " + formattedItem.End + "[label = \" " + formattedItem.Symbol + ":" + formattedItem.EdgeTimesUsed.ToString() + "\" color = darkolivegreen4];\n";
                         break;
                     }
                     default:
@@ -202,7 +211,7 @@ namespace Automatas.POCO
         /// <summary>
         /// Matriz AFD
         /// </summary>
-        public List<List<string>> toTransformedOutputMatrix()
+        public List<List<string>> ToTransformedOutputMatrix()
         {
             var matrix = new List<List<string>>();
 
@@ -252,7 +261,7 @@ namespace Automatas.POCO
         /// <summary>
         /// Validación
         /// </summary>
-        public bool validateInput(string input)
+        public bool ValidateInput(string input)
         {
             foreach (var a in W)
             {
@@ -329,8 +338,10 @@ namespace Automatas.POCO
         public FiveTuple Transform()
         {
             var newComps = new List<List<string>>();
-            var newState = new List<string>();
-            newState.Add(I);
+            var newState = new List<string>
+            {
+                I
+            };
             var aux = I;
             while (true) {
                 aux = Find(aux, LAMBDA);
@@ -415,8 +426,10 @@ namespace Automatas.POCO
                     }
                 }
             }
-            var transformedFiveTuple = new FiveTuple();
-            transformedFiveTuple.Q = newQ.ToArray();
+            var transformedFiveTuple = new FiveTuple
+            {
+                Q = newQ.ToArray()
+            };
             var newF = new List<string>();
             foreach(var a in F)
             {

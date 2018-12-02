@@ -48,7 +48,7 @@ namespace Automata
 
         private void ParseData(string filePath)
         {
-            resetData();
+            ResetData();
             string rawData;
             if (string.IsNullOrEmpty(filePath))
             {
@@ -61,16 +61,16 @@ namespace Automata
                 textBoxData.Text = rawData;
             }
             var fiveTuple = new FiveTuple(rawData);
-            if (fiveTuple.isValid)
+            if (fiveTuple.IsValid)
             {
                 fiveTuple.Transform();
                 textBoxQ.Text = string.Join("\n", fiveTuple.Q);
                 textBoxF.Text = string.Join("\n", fiveTuple.F);
                 textBoxA.Text = string.Join("\n", fiveTuple.A);
-                itemsNFA.ItemsSource = fiveTuple.toOutputMatrix();
+                itemsNFA.ItemsSource = fiveTuple.ToOutputMatrix();
                 try
                 {
-                    setUpGraph(fiveTuple, false);
+                    SetUpGraph(fiveTuple, false);
 
                 }
                 catch (Exception)
@@ -85,11 +85,11 @@ namespace Automata
             }
         }
 
-        public async void setUpGraph(FiveTuple fiveTuple, bool deterministic)
+        public async void SetUpGraph(FiveTuple fiveTuple, bool deterministic)
         {
             try
             {
-                var result = await Task.Run(() => fiveTuple.toGraph());
+                var result = await Task.Run(() => fiveTuple.ToGraph());
                 BitmapImage image = new BitmapImage();
                 image.BeginInit();
                 image.CacheOption = BitmapCacheOption.OnLoad;
@@ -114,10 +114,10 @@ namespace Automata
         public async void Transform(FiveTuple fiveTuple)
         {
             var result = await Task.Run(() => fiveTuple.Transform());
-            itemsDFA.ItemsSource = result.toTransformedOutputMatrix();
+            itemsDFA.ItemsSource = result.ToTransformedOutputMatrix();
             try
             {
-                setUpGraph(result, true);
+                SetUpGraph(result, true);
 
             }
             catch (Exception)
@@ -130,7 +130,7 @@ namespace Automata
             buttonValidate.IsEnabled = true;
         }
 
-        private void buttonData_Click(object sender, RoutedEventArgs e)
+        private void ButtonData_Click(object sender, RoutedEventArgs e)
         {
             if (textBoxData.Text.Equals(string.Empty))
             {
@@ -142,40 +142,40 @@ namespace Automata
         private async void Validate()
         {
             var input = textBoxIn.Text;
-            var result = await Task.Run(() => transformed.validateInput(input));
+            var result = await Task.Run(() => transformed.ValidateInput(input));
             if (result)
             {
                 labelValidate.Content = "Cadena de Aceptacion";
                 textBoxIn.Background = new SolidColorBrush(Color.FromRgb(198, 239, 206));
-                setUpGraph(transformed, true);
+                SetUpGraph(transformed, true);
             }
             else
             {
                 labelValidate.Content = "Cadena Invalida";
                 textBoxIn.Background = new SolidColorBrush(Color.FromRgb(255, 199, 206));
-                setUpGraph(transformed, true);
+                SetUpGraph(transformed, true);
             }
         }
 
-        private void textBoxIn_TextChanged(object sender, TextChangedEventArgs e)
+        private void TextBoxIn_TextChanged(object sender, TextChangedEventArgs e)
         {
             Validate();
         }
 
-        private void buttonValidate_Click(object sender, RoutedEventArgs e)
+        private void ButtonValidate_Click(object sender, RoutedEventArgs e)
         {
             Validate();
         }
 
-        private void textBoxIn_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        private void TextBoxIn_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == System.Windows.Input.Key.Enter)
+            if (e.Key == Key.Enter)
             {
                 Validate();
             }
         }
 
-        private void resetData()
+        private void ResetData()
         {
             textBoxQ.Text = string.Empty;
             textBoxF.Text = string.Empty;

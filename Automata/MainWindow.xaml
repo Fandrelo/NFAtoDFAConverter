@@ -24,7 +24,7 @@
             <TextBox Text="{Binding Path=.}" Height="auto" Width="100" Margin="1,1,1,1" HorizontalContentAlignment="Center" IsReadOnly="True" FontSize="16"/>
         </DataTemplate>
 
-        <DataTemplate x:Key="DataTemplateTop">
+        <DataTemplate x:Key="DataTemplateOutter">
             <ItemsControl ItemsSource="{Binding}" ItemTemplate="{DynamicResource DataTemplateInner}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -79,7 +79,7 @@
                 <TextBox x:Name="textBoxPath" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="5" Grid.Column="0"/>
                 <Label Content="AFN" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Grid.Column="1"/>
             </Grid>
-            <Button Content="Data" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1" Click="buttonData_Click"/>
+            <Button Content="Data" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1" Click="ButtonData_Click"/>
             <Label Content="Q" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="1"/>
             <Label Content="F" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="1"/>
             <Label Content="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" Grid.Row="1"/>
@@ -88,7 +88,7 @@
             <TextBox x:Name="textBoxF" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="2" Grid.Row="2"/>
             <TextBox x:Name="textBoxA" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="3" Grid.Row="2"/>
             <Grid x:Name="gridNFA" HorizontalAlignment="Center" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="4">
-                <ItemsControl x:Name="itemsNFA" ItemTemplate="{DynamicResource DataTemplateTop}"/>
+                <ItemsControl x:Name="itemsNFA" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
             </Grid>
             <Image x:Name="imageNFA" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="4"/>
         </Grid>
@@ -109,7 +109,7 @@
             <Label Content="AFD" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Column="0" Grid.Row="0"/>
             <TextBox x:Name="textBoxDataTransformed" FontSize="20" IsReadOnly="True" TextWrapping="Wrap" Margin="5" Grid.Column="0" Grid.Row="1"/>
             <Grid x:Name="gridDFA" HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2">
-                <ItemsControl x:Name="itemsDFA" ItemTemplate="{DynamicResource DataTemplateTop}"/>
+                <ItemsControl x:Name="itemsDFA" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
             </Grid>
             <Image x:Name="imageDFA" Grid.Column="0" Grid.Row="3"/>
             <Grid Grid.Column="0" Grid.Row="4">
@@ -118,8 +118,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button x:Name="buttonValidate" FontSize="20" Content="Comprobar" IsEnabled="False" Margin="5" Grid.Column="0" Click="buttonValidate_Click"/>
-                <TextBox x:Name="textBoxIn" FontSize="20" HorizontalContentAlignment="Left" IsEnabled="False" VerticalContentAlignment="Center" Margin="5" Grid.Column="1" TextChanged="textBoxIn_TextChanged" KeyUp="textBoxIn_KeyUp"/>
+                <Button x:Name="buttonValidate" FontSize="20" Content="Comprobar" IsEnabled="False" Margin="5" Grid.Column="0" Click="ButtonValidate_Click"/>
+                <TextBox x:Name="textBoxIn" FontSize="20" HorizontalContentAlignment="Left" IsEnabled="False" VerticalContentAlignment="Center" Margin="5" Grid.Column="1" TextChanged="TextBoxIn_TextChanged" KeyUp="TextBoxIn_KeyUp"/>
                 <Label x:Name="labelValidate" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5" Grid.Column="2"/>
             </Grid>
         </Grid>
