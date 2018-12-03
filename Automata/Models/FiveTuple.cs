@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Automatas.Homebrew;
+using Automata.Homebrew;
 
-namespace Automatas.POCO
+namespace Automata.Models
 {
     public class FiveTuple
     {
@@ -251,7 +251,7 @@ namespace Automatas.POCO
             }
             return matrix;
         }
-        public string getTransformedData()
+        public string GetTransformedData()
         {
             return "Q={" + string.Join(",", Q) + "}\n" +
                 "F={" + string.Join(",", F) + "}\n" +
