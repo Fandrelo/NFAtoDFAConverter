@@ -28,12 +28,21 @@ namespace Automata
         private readonly DelegateCommand _validateInput;
         public ICommand ValidateInput => _validateInput;
 
+        private readonly DelegateCommand _parseManualDataCommand;
+        public ICommand ParseManualDataCommand => _parseManualDataCommand;
+
         public MainWindowViewModel()
         {
             _changeNameCommand = new DelegateCommand(OnChangeName, CanChangeName);
             _openFileCommand = new DelegateCommand(OnOpenFile, null);
             _dropFileCommand = new DelegateCommand(OnDropFile, null);
             _validateInput = new DelegateCommand(OnValidateInput, null);
+            _parseManualDataCommand = new DelegateCommand(OnParseManualData, null);
+        }
+
+        private void OnParseManualData(object obj)
+        {
+            ParseData(string.Empty);
         }
 
         private void OnValidateInput(object commandParameter)
@@ -43,13 +52,13 @@ namespace Automata
             {
                 ValidationStatus = "Ok";
                 ValidationStatusBG = new SolidColorBrush(Color.FromRgb(198, 239, 206));
-                SetUpGraph(transformed, true);
+                SetUpGraphAsync(transformed, true);
             }
             else
             {
                 ValidationStatus = "Error";
                 ValidationStatusBG = new SolidColorBrush(Color.FromRgb(255, 199, 206));
-                SetUpGraph(transformed, true);
+                SetUpGraphAsync(transformed, true);
             }
         }
 
@@ -207,7 +216,12 @@ namespace Automata
                 rawData = File.ReadAllText(filePath);
                 Data = rawData;
             }
-            var fiveTuple = new FiveTuple(rawData);
+            SetUpFiveTupleAsync(rawData);
+        }
+
+        private async void SetUpFiveTupleAsync(string rawData)
+        {
+            var fiveTuple = await Task.Run(() => new FiveTuple(rawData));
             if (fiveTuple.IsValid)
             {
                 Q = string.Join("\n", fiveTuple.Q);
@@ -216,11 +230,11 @@ namespace Automata
                 NFAMatrix = fiveTuple.ToOutputMatrix();
                 try
                 {
-                    SetUpGraph(fiveTuple, false);
+                    SetUpGraphAsync(fiveTuple, false);
 
                 }
-                catch (Exception){}
-                Transform(fiveTuple);
+                catch (Exception) { }
+                TransformFiveTupleAsync(fiveTuple);
             }
             else
             {
@@ -245,13 +259,13 @@ namespace Automata
             CanType = false;
         }
 
-        public async void Transform(FiveTuple fiveTuple)
+        public async void TransformFiveTupleAsync(FiveTuple fiveTuple)
         {
             var result = await Task.Run(() => fiveTuple.Transform());
             DFAMatrix = result.ToTransformedOutputMatrix();
             try
             {
-                SetUpGraph(result, true);
+                SetUpGraphAsync(result, true);
 
             }
             catch (Exception){}
@@ -260,7 +274,7 @@ namespace Automata
             CanType = true;
         }
 
-        public async void SetUpGraph(FiveTuple fiveTuple, bool deterministic)
+        public async void SetUpGraphAsync(FiveTuple fiveTuple, bool deterministic)
         {
             try
             {

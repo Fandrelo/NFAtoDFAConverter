@@ -83,7 +83,7 @@
                 <TextBox Text="{Binding Path=Path}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="5" Grid.Column="0"/>
                 <Label Content="N" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Grid.Column="1"/>
             </Grid>
-            <Button Content="Data" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1"/>
+            <Button Content="Data" Command="{Binding Path=ParseManualDataCommand}" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1"/>
             <Label Content="Q" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="1"/>
             <Label Content="F" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="1"/>
             <Label Content="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" Grid.Row="1"/>
