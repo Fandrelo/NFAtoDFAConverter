@@ -4,25 +4,30 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows.Media.Imaging;
 using Automata.Homebrew;
 
 namespace Automata.Models
 {
     public class FiveTuple
     {
-        public static string LAMBDA = "e";
-        public static int ASCII_A = 65;
+        private static readonly string LAMBDA = "e";
+        private static readonly int ASCII_A = 65;
         public string[] Q { get; set; }
         public string[] F { get; set; }
         public string I { get; set; }
         public string[] A { get; set; }
         private Transition[] W { get; set; }
-        public string[] Comps { get; set; }
+        public List<List<string>> Matrix { get; private set; }
+        public BitmapImage Graph { get; private set; }
+        public string Data { get; set; }
+        private string[] Comps { get; set; }
         private string CurrentNodeOnGraph { get; set; } = string.Empty;
         public bool IsValid { get; set; } = true;
         public FiveTuple() { }
         public FiveTuple(string rawData)
         {
+            Data = rawData;
             rawData = rawData.Replace("\r", "");
             var splittedData = rawData.Split('\n');
             var ads = splittedData[0].Substring(splittedData[0].Length - 2);
@@ -60,37 +65,36 @@ namespace Automata.Models
         /// <summary>
         /// Matriz AFN
         /// </summary>
-        public List<List<string>> ToOutputMatrix()
+        public void ToOutputMatrix()
         {
-            var matrix = new List<List<string>>();
+            Matrix = new List<List<string>>();
 
             for (int i = 0; i < Q.Count() + 1; i++)
             {
-                matrix.Add(new List<string>());
+                Matrix.Add(new List<string>());
 
                 for (int j = 0; j < F.Count() + 1; j++)
                 {
                     if (i == 0 && j == 0)
                     {
-                        matrix[i].Add("Estados");
+                        Matrix[i].Add("Estados");
                     }
                     else if (i == 0)
                     {
-                        matrix[i].Add(F[j - 1]);
+                        Matrix[i].Add(F[j - 1]);
                     }
                     else if (j == 0)
                     {
-                        matrix[i].Add(Q[i - 1]);
+                        Matrix[i].Add(Q[i - 1]);
                     }
                     else
                     {
-                        matrix[i].Add(Find(Q[i - 1], F[j - 1]));
+                        Matrix[i].Add(Find(Q[i - 1], F[j - 1]));
                     }
                 }
             }
-            return matrix;
         }
-        public string ToGraph()
+        public void ToGraph()
         {
             var timeOnStart = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             timeOnStart += ".dot";
@@ -206,54 +210,60 @@ namespace Automata.Models
             {
                 File.Delete(timeOnStart);
             }
-            return timeOnEnd;
+
+            Graph = new BitmapImage();
+            Graph.BeginInit();
+            Graph.CacheOption = BitmapCacheOption.OnLoad;
+            Graph.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + timeOnEnd, UriKind.Absolute);
+            Graph.EndInit();
+            Graph.Freeze();
+            File.Delete(timeOnEnd);
         }
         /// <summary>
         /// Matriz AFD
         /// </summary>
-        public List<List<string>> ToTransformedOutputMatrix()
+        public void ToTransformedOutputMatrix()
         {
-            var matrix = new List<List<string>>();
+            Matrix = new List<List<string>>();
 
             for (int i = 0; i < Q.Count() + 1; i++)
             {
-                matrix.Add(new List<string>());
+                Matrix.Add(new List<string>());
 
                 for (int j = 0; j < F.Count() + 2; j++)
                 {
 
                     if (i == 0 && j == 0)
                     {
-                        matrix[i].Add("Estados");
+                        Matrix[i].Add("Estados");
                     }
                     else if (i == 0 && j == F.Count() + 1)
                     {
-                        matrix[i].Add("Comp");
+                        Matrix[i].Add("Comp");
                     }
                     else if (i == 0)
                     {
-                        matrix[i].Add(F[j - 1]);
+                        Matrix[i].Add(F[j - 1]);
                     }
                     else if (j == 0)
                     {
-                        matrix[i].Add("*" + Q[i - 1]);
+                        Matrix[i].Add("*" + Q[i - 1]);
                     }
 
                     else if (j == F.Count() + 1)
                     {
-                        matrix[i].Add(Comps[i - 1]);
+                        Matrix[i].Add(Comps[i - 1]);
                     }
                     else
                     {
-                        matrix[i].Add(Find(Q[i - 1], F[j - 1]));
+                        Matrix[i].Add(Find(Q[i - 1], F[j - 1]));
                     }
                 }
             }
-            return matrix;
         }
-        public string GetTransformedData()
+        public void GetTransformedData()
         {
-            return "Q={" + string.Join(",", Q) + "}\n" +
+            Data = "Q={" + string.Join(",", Q) + "}\n" +
                 "F={" + string.Join(",", F) + "}\n" +
                 "i=" + I + "\n" +
                 "A={" + string.Join(",", A) + "}";

@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace Automata.Homebrew
@@ -58,6 +59,11 @@ namespace Automata.Homebrew
             }
             return false;
         }
+
+        protected void ForceNotification(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public static class DropBehavior
@@ -91,6 +97,24 @@ namespace Automata.Homebrew
                 GetCommand(uiElement).Execute(args.Data);
                 args.Handled = true;
             };
+        }
+    }
+
+    [ValueConversion(typeof(string[]), typeof(string))]
+    public class StringArrayFormatter : IValueConverter
+    {
+
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            if (targetType != typeof(string))
+                return string.Empty;
+
+            return string.Join(Environment.NewLine, ((string[])value));
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return DependencyProperty.UnsetValue;
         }
     }
 }

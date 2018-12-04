@@ -14,8 +14,6 @@ namespace Automata
 {
     class MainWindowViewModel : ViewModelBase
     {
-        private FiveTuple transformed;
-
         private readonly DelegateCommand _changeNameCommand;
         public ICommand ChangeNameCommand => _changeNameCommand;
 
@@ -47,18 +45,18 @@ namespace Automata
 
         private void OnValidateInput(object commandParameter)
         {
-            var result = transformed.ValidateInput(Input);
+            var result = DFA.ValidateInput(Input);
             if (result)
             {
                 ValidationStatus = "Ok";
                 ValidationStatusBG = new SolidColorBrush(Color.FromRgb(198, 239, 206));
-                SetUpGraphAsync(transformed, true);
+                SetUpGraphAsync(true);
             }
             else
             {
                 ValidationStatus = "Error";
                 ValidationStatusBG = new SolidColorBrush(Color.FromRgb(255, 199, 206));
-                SetUpGraphAsync(transformed, true);
+                SetUpGraphAsync(true);
             }
         }
 
@@ -98,12 +96,7 @@ namespace Automata
             set => SetProperty(ref _windowTitle, value);
         }
 
-        private string _data;
-        public string Data
-        {
-            get => _data;
-            set => SetProperty(ref _data, value);
-        }
+        private string Data { get; set; }
 
         private string _path;
         public string Path
@@ -112,69 +105,13 @@ namespace Automata
             set => SetProperty(ref _path, value);
         }
 
-        private string _q;
-        public string Q
-        {
-            get => _q;
-            set => SetProperty(ref _q, value);
-        }
-
-        private string _f;
-        public string F
-        {
-            get => _f;
-            set => SetProperty(ref _f, value);
-        }
-
-        private string _a;
-        public string A
-        {
-            get => _a;
-            set => SetProperty(ref _a, value);
-        }
-
-        private List<List<string>> _nfaMatrix;
-        public List<List<string>> NFAMatrix
-        {
-            get => _nfaMatrix;
-            set => SetProperty(ref _nfaMatrix, value);
-        }
-
-        private BitmapImage _nfaImage;
-        public BitmapImage NFAImage
-        {
-            get => _nfaImage;
-            set => SetProperty(ref _nfaImage, value);
-        }
-
-        private List<List<string>> _dfaMatrix;
-        public List<List<string>> DFAMatrix
-        {
-            get => _dfaMatrix;
-            set => SetProperty(ref _dfaMatrix, value);
-        }
-
-        private string _dataTransformed;
-        public string DataTransformed
-        {
-            get => _dataTransformed;
-            set => SetProperty(ref _dataTransformed, value);
-        }
-
-        private BitmapImage _dfaImage;
-        public BitmapImage DFAImage
-        {
-            get => _dfaImage;
-            set => SetProperty(ref _dfaImage, value);
-        }
-
         private string _input;
         public string Input
         {
             get => _input;
             set {
                 SetProperty(ref _input, value);
-                if (transformed != null)
+                if (DFA != null)
                 {
                     OnValidateInput(null);
                 }
@@ -202,6 +139,20 @@ namespace Automata
             set => SetProperty(ref _validationStatusBG, value);
         }
 
+        private FiveTuple _nfa;
+        public FiveTuple NFA
+        {
+            get => _nfa;
+            set => SetProperty(ref _nfa, value);
+        }
+
+        private FiveTuple _dfa;
+        public FiveTuple DFA
+        {
+            get => _dfa;
+            set => SetProperty(ref _dfa, value);
+        }
+
         private void ParseData(string filePath)
         {
             ResetData();
@@ -221,20 +172,18 @@ namespace Automata
 
         private async void SetUpFiveTupleAsync(string rawData)
         {
-            var fiveTuple = await Task.Run(() => new FiveTuple(rawData));
-            if (fiveTuple.IsValid)
+            NFA = await Task.Run(() => new FiveTuple(rawData));
+            if (NFA.IsValid)
             {
-                Q = string.Join("\n", fiveTuple.Q);
-                F = string.Join("\n", fiveTuple.F);
-                A = string.Join("\n", fiveTuple.A);
-                NFAMatrix = fiveTuple.ToOutputMatrix();
+                NFA.ToOutputMatrix();
+                ForceNotification(nameof(NFA));
                 try
                 {
-                    SetUpGraphAsync(fiveTuple, false);
-
+                    SetUpGraphAsync(false);
                 }
                 catch (Exception) { }
-                TransformFiveTupleAsync(fiveTuple);
+                ForceNotification(nameof(NFA));
+                TransformFiveTupleAsync(NFA);
             }
             else
             {
@@ -244,55 +193,41 @@ namespace Automata
 
         private void ResetData()
         {
-            transformed = null;
-            Q = string.Empty;
-            F = string.Empty;
-            A = string.Empty;
-            DataTransformed = string.Empty;
+            NFA = null;
+            DFA = null;
             ValidationStatusBG = new SolidColorBrush(Color.FromRgb(255, 255, 255));
             Input = string.Empty;
             ValidationStatus = string.Empty;
-            NFAMatrix = null;
-            DFAMatrix = null;
-            NFAImage = null;
-            DFAImage = null;
             CanType = false;
         }
 
         public async void TransformFiveTupleAsync(FiveTuple fiveTuple)
         {
-            var result = await Task.Run(() => fiveTuple.Transform());
-            DFAMatrix = result.ToTransformedOutputMatrix();
+            DFA = await Task.Run(() => fiveTuple.Transform());
+            DFA.ToTransformedOutputMatrix();
             try
             {
-                SetUpGraphAsync(result, true);
-
+                SetUpGraphAsync(true);
             }
             catch (Exception){}
-            DataTransformed = result.GetTransformedData();
-            transformed = result;
+            DFA.GetTransformedData();
             CanType = true;
         }
 
-        public async void SetUpGraphAsync(FiveTuple fiveTuple, bool deterministic)
+        public async void SetUpGraphAsync(bool deterministic)
         {
             try
             {
-                var result = await Task.Run(() => fiveTuple.ToGraph());
-                BitmapImage image = new BitmapImage();
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + result, UriKind.Absolute);
-                image.EndInit();
                 if (deterministic)
                 {
-                    DFAImage = image;
+                    await Task.Run(() => DFA.ToGraph());
+                    ForceNotification(nameof(DFA));
                 }
                 else
                 {
-                    NFAImage = image;
+                    await Task.Run(() => NFA.ToGraph());
+                    ForceNotification(nameof(NFA));
                 }
-                File.Delete(result);
             }
             catch (Exception){}
         }
