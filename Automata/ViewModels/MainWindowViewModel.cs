@@ -151,6 +151,13 @@ namespace Automata
             set => SetProperty(ref _dfa, value);
         }
 
+        private int _qFontSize;
+        public int QFontSize
+        {
+            get => _qFontSize;
+            set => SetProperty(ref _qFontSize, value);
+        }
+
         private void ParseData(string filePath)
         {
             ResetData();
@@ -173,6 +180,13 @@ namespace Automata
             NFA = await Task.Run(() => new FiveTuple(rawData));
             if (NFA.IsValid)
             {
+                if(NFA.Q.Length > 5)
+                {
+                    QFontSize = 15;
+                } else
+                {
+                    QFontSize = 20;
+                }
                 NFA.SetupOutputMatrix();
                 ForceNotification(nameof(NFA));
                 try

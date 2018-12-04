@@ -26,7 +26,17 @@
     <Window.Resources>
         
         <DataTemplate x:Key="DataTemplateInner">
-            <TextBox Text="{Binding Path=.}" Height="auto" Width="100" Margin="1,1,1,1" HorizontalContentAlignment="Center" IsReadOnly="True" FontSize="16"/>
+            <TextBox Text="{Binding Path=.}" Height="auto" Width="100" Margin="1,1,1,1" HorizontalContentAlignment="Center" IsReadOnly="True" FontSize="16">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Style.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter Property="BorderThickness" Value="0" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
         </DataTemplate>
 
         <DataTemplate x:Key="DataTemplateOutter">
@@ -40,7 +50,8 @@
         </DataTemplate>
 
         <homebrew:StringArrayFormatter x:Key="StringArrayFormatter" />
-        
+        <!--<homebrew:LengthConverter x:Key="LengthConverter" />-->
+
     </Window.Resources>
 
     <Controls:MetroWindow.RightWindowCommands>
@@ -63,76 +74,96 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto" />
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4">
+        <ScrollViewer Grid.Column="0">
+            
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Text="{Binding Path=Path}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="5" Grid.Column="0"/>
-                <Label Content="N" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Grid.Column="1"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding Path=Path}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Margin="5" Grid.Column="0"/>
+                    <Label Content="N" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Right" VerticalContentAlignment="Center" Grid.Column="1"/>
+                </Grid>
+                <Button Content="Data" Command="{Binding Path=ParseManualDataCommand}" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1"/>
+                <Label Content="Q" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="1"/>
+                <Label Content="F" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="1"/>
+                <Label Content="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" Grid.Row="1"/>
+                <TextBox Text="{Binding Path=NFA.Data}" FontSize="20" AcceptsReturn="True" TextWrapping="Wrap" Margin="5" Grid.Column="0" Grid.Row="2"/>
+                <TextBox Text="{Binding Path=NFA.Q, Converter={StaticResource StringArrayFormatter}}" FontSize="{Binding Path=QFontSize}" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="1" Grid.Row="2">
+                    <!-- Changing FontSize through <Setter /> doesn't work, using Binding on FontSize instead.
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=Text, RelativeSource={RelativeSource Self}, Converter={StaticResource LengthConverter}}" Value="True">
+                                    <Setter Property="FontSize" Value="10" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>-->
+                </TextBox>
+                <TextBox Text="{Binding Path=NFA.F, Converter={StaticResource StringArrayFormatter}}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="2" Grid.Row="2"/>
+                <TextBox Text="{Binding Path=NFA.A, Converter={StaticResource StringArrayFormatter}}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="3" Grid.Row="2"/>
+                <Grid HorizontalAlignment="Center" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="4">
+                    <ItemsControl ItemsSource="{Binding Path=NFA.Matrix}" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
+                </Grid>
+                <Image Source="{Binding Path=NFA.Graph}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="4"/>
             </Grid>
-            <Button Content="Data" Command="{Binding Path=ParseManualDataCommand}" FontSize="20" Margin="5" Grid.Column="0" Grid.Row="1"/>
-            <Label Content="Q" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1" Grid.Row="1"/>
-            <Label Content="F" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="2" Grid.Row="1"/>
-            <Label Content="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalContentAlignment="Center" Grid.Column="3" Grid.Row="1"/>
-            <TextBox Text="{Binding Path=NFA.Data}" FontSize="20" AcceptsReturn="True" TextWrapping="Wrap" Margin="5" Grid.Column="0" Grid.Row="2"/>
-            <TextBox Text="{Binding Path=NFA.Q, Converter={StaticResource StringArrayFormatter}}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="1" Grid.Row="2"/>
-            <TextBox Text="{Binding Path=NFA.F, Converter={StaticResource StringArrayFormatter}}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="2" Grid.Row="2"/>
-            <TextBox Text="{Binding Path=NFA.A, Converter={StaticResource StringArrayFormatter}}" FontSize="20" IsReadOnly="True" HorizontalContentAlignment="Center" Margin="5" Grid.Column="3" Grid.Row="2"/>
-            <Grid HorizontalAlignment="Center" Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="4">
-                <ItemsControl ItemsSource="{Binding Path=NFA.Matrix}" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
-            </Grid>
-            <Image Source="{Binding Path=NFA.Graph}" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4" Grid.ColumnSpan="4"/>
-        </Grid>
+
+        </ScrollViewer>
 
         <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" />
 
-        <Grid Grid.Column="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-            <Label Content="D" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Column="0" Grid.Row="0"/>
-            <TextBox Text="{Binding Path=DFA.Data}" FontSize="20" IsReadOnly="True" TextWrapping="Wrap" Margin="5" Grid.Column="0" Grid.Row="1"/>
-            <Grid HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2">
-                <ItemsControl ItemsSource="{Binding Path=DFA.Matrix}" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
-            </Grid>
-            <Image Source="{Binding Path=DFA.Graph}" Grid.Column="0" Grid.Row="3"/>
-            <Grid Grid.Column="0" Grid.Row="4">
+        <ScrollViewer Grid.Column="2">
+            
+            <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Button FontSize="20" Content="Check" IsEnabled="{Binding Path=CanType}" Margin="5" Grid.Column="0" Command="{Binding Path=ValidateInput}"/>
-                <TextBox Text="{Binding Path=Input, UpdateSourceTrigger=PropertyChanged}" Background="{Binding Path=ValidationStatusBG}" FontSize="20" HorizontalContentAlignment="Left" IsEnabled="{Binding Path=CanType}" VerticalContentAlignment="Center" Margin="5" Grid.Column="1">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Return" Command="{Binding Path=ValidateInput}" />
-                    </TextBox.InputBindings>
-                </TextBox>
-                <Label Content="{Binding Path=ValidationStatus}" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5" Grid.Column="2"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="D" FontSize="25" FontWeight="UltraBold" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                <TextBox Text="{Binding Path=DFA.Data}" FontSize="20" IsReadOnly="True" TextWrapping="Wrap" Margin="5" Grid.Column="0" Grid.Row="1"/>
+                <Grid HorizontalAlignment="Center" Grid.Column="0" Grid.Row="2">
+                    <ItemsControl ItemsSource="{Binding Path=DFA.Matrix}" ItemTemplate="{DynamicResource DataTemplateOutter}"/>
+                </Grid>
+                <Image Source="{Binding Path=DFA.Graph}" Grid.Column="0" Grid.Row="3"/>
+                <Grid Grid.Column="0" Grid.Row="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button FontSize="20" Content="Check" IsEnabled="{Binding Path=CanType}" Margin="5" Grid.Column="0" Command="{Binding Path=ValidateInput}"/>
+                    <TextBox Text="{Binding Path=Input, UpdateSourceTrigger=PropertyChanged}" Background="{Binding Path=ValidationStatusBG}" FontSize="20" HorizontalContentAlignment="Left" IsEnabled="{Binding Path=CanType}" VerticalContentAlignment="Center" Margin="5" Grid.Column="1">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding Path=ValidateInput}" />
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <Label Content="{Binding Path=ValidationStatus}" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="5" Grid.Column="2"/>
+                </Grid>
             </Grid>
-        </Grid>
+
+        </ScrollViewer>
+        
 
     </Grid>
 

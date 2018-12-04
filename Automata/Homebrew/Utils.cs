@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -107,7 +108,7 @@ namespace Automata.Homebrew
             if (targetType != typeof(string))
                 return string.Empty;
 
-            return string.Join(Environment.NewLine, ((string[])value));
+            return string.Join("\n", (string[])value);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -115,4 +116,22 @@ namespace Automata.Homebrew
             return DependencyProperty.UnsetValue;
         }
     }
+
+    /*public class LengthConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string text)
+            {
+                return text.Count(a => a == '\n') > 4;
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return DependencyProperty.UnsetValue;
+        }
+
+    }*/
 }

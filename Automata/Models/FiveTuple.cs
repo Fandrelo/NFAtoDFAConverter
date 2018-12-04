@@ -62,6 +62,20 @@ namespace Automata.Models
             }
             return string.Empty;
         }
+
+        public List<string> NewFind(string state, string symbol)
+        {
+            var matches = new List<string>();
+            foreach (var a in W)
+            {
+                if (a.Find(state, symbol))
+                {
+                    matches.Add(a.End);
+                }
+            }
+            return matches;
+        }
+
         /// <summary>
         /// Matriz AFN
         /// </summary>
@@ -77,7 +91,7 @@ namespace Automata.Models
                 {
                     if (i == 0 && j == 0)
                     {
-                        Matrix[i].Add("Estados");
+                        Matrix[i].Add("Q");
                     }
                     else if (i == 0)
                     {
@@ -89,7 +103,7 @@ namespace Automata.Models
                     }
                     else
                     {
-                        Matrix[i].Add(Find(Q[i - 1], F[j - 1]));
+                        Matrix[i].Add(string.Join(", ", NewFind(Q[i - 1], F[j - 1])));
                     }
                 }
             }
@@ -235,7 +249,7 @@ namespace Automata.Models
 
                     if (i == 0 && j == 0)
                     {
-                        Matrix[i].Add("Estados");
+                        Matrix[i].Add("Q");
                     }
                     else if (i == 0 && j == F.Count() + 1)
                     {
