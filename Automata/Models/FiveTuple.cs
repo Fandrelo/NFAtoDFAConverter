@@ -65,7 +65,7 @@ namespace Automata.Models
         /// <summary>
         /// Matriz AFN
         /// </summary>
-        public void ToOutputMatrix()
+        public void SetupOutputMatrix()
         {
             Matrix = new List<List<string>>();
 
@@ -94,7 +94,7 @@ namespace Automata.Models
                 }
             }
         }
-        public void ToGraph()
+        public void SetupGraph()
         {
             var timeOnStart = DateTime.Now.ToString("yyyyMMddHHmmssffff");
             timeOnStart += ".dot";
@@ -222,7 +222,7 @@ namespace Automata.Models
         /// <summary>
         /// Matriz AFD
         /// </summary>
-        public void ToTransformedOutputMatrix()
+        public void SetupTransformedOutputMatrix()
         {
             Matrix = new List<List<string>>();
 
@@ -261,7 +261,7 @@ namespace Automata.Models
                 }
             }
         }
-        public void GetTransformedData()
+        public void SetupTransformedData()
         {
             Data = "Q={" + string.Join(",", Q) + "}\n" +
                 "F={" + string.Join(",", F) + "}\n" +
@@ -271,7 +271,7 @@ namespace Automata.Models
         /// <summary>
         /// Validación
         /// </summary>
-        public bool ValidateInput(string input)
+        public bool IsInputValid(string input)
         {
             foreach (var a in W)
             {

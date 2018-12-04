@@ -43,7 +43,7 @@ namespace Automata
 
         private void OnValidateInput(object commandParameter)
         {
-            var result = DFA.ValidateInput(Input);
+            var result = DFA.IsInputValid(Input);
             if (result)
             {
                 ValidationStatus = "Ok";
@@ -173,7 +173,7 @@ namespace Automata
             NFA = await Task.Run(() => new FiveTuple(rawData));
             if (NFA.IsValid)
             {
-                NFA.ToOutputMatrix();
+                NFA.SetupOutputMatrix();
                 ForceNotification(nameof(NFA));
                 try
                 {
@@ -202,13 +202,13 @@ namespace Automata
         public async void TransformFiveTupleAsync(FiveTuple fiveTuple)
         {
             DFA = await Task.Run(() => fiveTuple.Transform());
-            DFA.ToTransformedOutputMatrix();
+            DFA.SetupTransformedOutputMatrix();
             try
             {
                 SetUpGraphAsync(true);
             }
             catch (Exception){}
-            DFA.GetTransformedData();
+            DFA.SetupTransformedData();
             CanType = true;
         }
 
@@ -218,12 +218,12 @@ namespace Automata
             {
                 if (deterministic)
                 {
-                    await Task.Run(() => DFA.ToGraph());
+                    await Task.Run(() => DFA.SetupGraph());
                     ForceNotification(nameof(DFA));
                 }
                 else
                 {
-                    await Task.Run(() => NFA.ToGraph());
+                    await Task.Run(() => NFA.SetupGraph());
                     ForceNotification(nameof(NFA));
                 }
             }
