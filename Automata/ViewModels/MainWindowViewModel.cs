@@ -1,5 +1,6 @@
 ﻿using Automata.Homebrew;
 using Automata.Models;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using System;
 using System.IO;
@@ -7,11 +8,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
-namespace Automata
+namespace Automata.ViewModels
 {
     class MainWindowViewModel : ViewModelBase
     {
+        private readonly IDialogCoordinator _dialogCoordinator;
+
         private readonly DelegateCommand _changeNameCommand;
         public ICommand ChangeNameCommand => _changeNameCommand;
 
@@ -27,16 +31,45 @@ namespace Automata
         private readonly DelegateCommand _parseManualDataCommand;
         public ICommand ParseManualDataCommand => _parseManualDataCommand;
 
-        public MainWindowViewModel()
+        private readonly DelegateCommand _saveImageCommand;
+        public ICommand SaveImageCommand => _saveImageCommand;
+
+        private readonly DelegateCommand _flyoutOpenCommand;
+        public ICommand FlyoutOpenCommand => _flyoutOpenCommand;
+
+        public MainWindowViewModel(IDialogCoordinator dialogCoordinator)
         {
+            _dialogCoordinator = dialogCoordinator;
             _changeNameCommand = new DelegateCommand(OnChangeName, CanChangeName);
             _openFileCommand = new DelegateCommand(OnOpenFile, null);
             _dropFileCommand = new DelegateCommand(OnDropFile, null);
             _validateInput = new DelegateCommand(OnValidateInput, null);
             _parseManualDataCommand = new DelegateCommand(OnParseManualData, null);
+            _saveImageCommand = new DelegateCommand(OnSaveImage, null);
+            _flyoutOpenCommand = new DelegateCommand(OnFlyoutOpen, null);
         }
 
-        private void OnParseManualData(object obj)
+        private void OnFlyoutOpen(object commandParameter)
+        {
+            IsFlyoutOpen = true;
+        }
+
+        private void OnSaveImage(object commandParameter)
+        {
+            if (!(commandParameter is BitmapImage image)) return;
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Gif (.gif)|*.gif"
+            };
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                using (FileStream stream = new FileStream(saveFileDialog.FileName, FileMode.Create)) encoder.Save(stream);
+            }
+        }
+
+        private void OnParseManualData(object commandParameter)
         {
             ParseData(string.Empty);
         }
@@ -94,7 +127,16 @@ namespace Automata
             set => SetProperty(ref _windowTitle, value);
         }
 
-        private string Data { get; set; }
+        private string _data;
+        public string Data
+        {
+            get => _data;
+            set
+            {
+                CanParse = !string.IsNullOrEmpty(value);
+                SetProperty(ref _data, value);
+            }
+        }
 
         private string _path;
         public string Path
@@ -158,6 +200,30 @@ namespace Automata
             set => SetProperty(ref _qFontSize, value);
         }
 
+        private bool _canParse = false;
+        public bool CanParse
+        {
+            get => _canParse;
+            set => SetProperty(ref _canParse, value);
+        }
+
+        private bool _isFlyoutOpen = false;
+        public bool IsFlyoutOpen
+        {
+            get => _isFlyoutOpen;
+            set => SetProperty(ref _isFlyoutOpen, value);
+        }
+
+        private int _uiScale = 1;
+        public int UIScale
+        {
+            get => _uiScale;
+            set
+            {
+                SetProperty(ref _uiScale, value);
+            }
+        }
+
         private void ParseData(string filePath)
         {
             ResetData();
@@ -199,7 +265,7 @@ namespace Automata
             }
             else
             {
-                MessageBox.Show("Error", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                ShowMessageAsync("Error", "The input is not valid.");
             }
         }
 
@@ -242,6 +308,11 @@ namespace Automata
                 }
             }
             catch (Exception){}
+        }
+
+        private async void ShowMessageAsync(string header, string message)
+        {
+            await _dialogCoordinator.ShowMessageAsync(this, header, message);
         }
     }
 }

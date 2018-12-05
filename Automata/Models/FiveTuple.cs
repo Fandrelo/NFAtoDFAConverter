@@ -23,35 +23,60 @@ namespace Automata.Models
         public string Data { get; set; }
         private string[] Comps { get; set; }
         private string CurrentNodeOnGraph { get; set; } = string.Empty;
-        public bool IsValid { get; set; } = true;
+        public bool IsValid { get; private set; } = true;
+
         public FiveTuple() { }
         public FiveTuple(string rawData)
         {
             Data = rawData;
+            if (!rawData.Contains('\n')) {
+                IsValid = false;
+                return;
+            }
             rawData = rawData.Replace("\r", "");
             var splittedData = rawData.Split('\n');
-            var ads = splittedData[0].Substring(splittedData[0].Length - 2);
-            IsValid = true;
-            Q = Regex.Match(splittedData[0], @"(?<=\{).*(?=\})").ToString().Split(',');
-            F = Regex.Match(splittedData[1], @"(?<=\{).*(?=\})").ToString().Split(',');
-            I = Regex.Match(splittedData[2], @"(?<=i=).*").ToString();
-            var rawA = splittedData[3];
-            if (rawA.Substring(0, 3) == "A={" && rawA.Substring(rawA.Length - 1) == "}")
+            if(splittedData.Length != 5)
             {
-                A = Regex.Match(rawA, @"(?<=\{).*(?=\})").ToString().Split(',');
-            } else
-            {
-                A = new[] { Regex.Match(rawA, @"(?<=A=).*").ToString() };
+                IsValid = false;
+                return;
             }
-            var regexW = Regex.Matches(splittedData[4], @"(?<=\().+?(?=\))");
-            W = new Transition[regexW.Count];
-            for (int i = 0; i < regexW.Count; i++)
+            try
             {
-                var transitionString = regexW[i].ToString().Split(',');
-                W[i] = new Transition(transitionString[0], transitionString[1], transitionString[2]);
+                var ads = splittedData[0].Substring(splittedData[0].Length - 2);
+                IsValid = true;
+                Q = Regex.Match(splittedData[0], @"(?<=\{).*(?=\})").ToString().Split(',');
+                F = Regex.Match(splittedData[1], @"(?<=\{).*(?=\})").ToString().Split(',');
+                I = Regex.Match(splittedData[2], @"(?<=i=).*").ToString();
+                var rawA = splittedData[3];
+                if (rawA.Substring(0, 3) == "A={" && rawA.Substring(rawA.Length - 1) == "}")
+                {
+                    A = Regex.Match(rawA, @"(?<=\{).*(?=\})").ToString().Split(',');
+                }
+                else
+                {
+                    A = new[] { Regex.Match(rawA, @"(?<=A=).*").ToString() };
+                }
+                var regexW = Regex.Matches(splittedData[4], @"(?<=\().+?(?=\))");
+                W = new Transition[regexW.Count];
+                for (int i = 0; i < regexW.Count; i++)
+                {
+                    var transitionString = regexW[i].ToString().Split(',');
+                    W[i] = new Transition(transitionString[0], transitionString[1], transitionString[2]);
+                }
+            }
+            catch (Exception)
+            {
+                IsValid = false;
+                return;
+            }
+            if(Q.Length == 0 || F.Length == 0 || string.IsNullOrEmpty(I) || A.Length == 0 || W.Length == 0)
+            {
+                IsValid = false;
+                return;
             }
         }
-        public string Find(string state, string symbol)
+
+        private string Find(string state, string symbol)
         {
             foreach(var a in W)
             {
@@ -62,8 +87,7 @@ namespace Automata.Models
             }
             return string.Empty;
         }
-
-        public List<string> NewFind(string state, string symbol)
+        private List<string> FindRange(string state, string symbol)
         {
             var matches = new List<string>();
             foreach (var a in W)
@@ -75,7 +99,21 @@ namespace Automata.Models
             }
             return matches;
         }
-
+        private List<string> FindRange(List<string> states, string symbol)
+        {
+            var matches = new List<string>();
+            foreach (var i in W)
+            {
+                foreach (var j in states)
+                {
+                    if (i.Find(j, symbol))
+                    {
+                        matches.Add(i.End);
+                    }
+                }
+            }
+            return matches;
+        }
         /// <summary>
         /// Matriz AFN
         /// </summary>
@@ -103,7 +141,7 @@ namespace Automata.Models
                     }
                     else
                     {
-                        Matrix[i].Add(string.Join(", ", NewFind(Q[i - 1], F[j - 1])));
+                        Matrix[i].Add(string.Join(",", FindRange(Q[i - 1], F[j - 1])));
                     }
                 }
             }
@@ -366,16 +404,20 @@ namespace Automata.Models
             {
                 I
             };
-            var aux = I;
-            while (true) {
-                aux = Find(aux, LAMBDA);
-                if(string.IsNullOrEmpty(aux))
+            var aux = new List<string>
+            {
+                I
+            };
+            while (true)
+            {
+                aux = FindRange(aux, LAMBDA);
+                if(aux.Count == 0)
                 {
                     break;
                 }
                 else
                 {
-                    newState.Add(aux);
+                    newState.AddRange(aux);
                 }
             }
             var newLambdasInState = new List<int>();
@@ -401,21 +443,21 @@ namespace Automata.Models
                     var temp = new List<string>();
                     foreach (string j in newComps[k])
                     {
-                        aux = Find(j, i);
-                        if (!string.IsNullOrEmpty(aux))
+                        aux = FindRange(j, i);
+                        if (aux.Count > 0)
                         {
-                            temp.Add(aux);
+                            temp.AddRange(aux);
                         }
                         while (true)
                         {
-                            aux = Find(aux, LAMBDA);
-                            if (string.IsNullOrEmpty(aux))
+                            aux = FindRange(aux, LAMBDA);
+                            if (aux.Count == 0)
                             {
                                 break;
                             }
                             else
                             {
-                                temp.Add(aux);
+                                temp.AddRange(aux);
                             }
                         }
                     }
@@ -433,7 +475,7 @@ namespace Automata.Models
                     foreach (var a in newComps)
                     {
                         exists = Utils.EqualsAll(temp, a);
-                        if(exists)
+                        if (exists)
                         {
                             break;
                         }
@@ -455,7 +497,7 @@ namespace Automata.Models
                 Q = newQ.ToArray()
             };
             var newF = new List<string>();
-            foreach(var a in F)
+            foreach (var a in F)
             {
                 if (a == LAMBDA)
                 {
@@ -471,9 +513,9 @@ namespace Automata.Models
             }
             foreach (var a in newW)
             {
-                for(int i = 0; i < strComps.Count; i++)
+                for (int i = 0; i < strComps.Count; i++)
                 {
-                    if(a.Begin.Equals(strComps[i]))
+                    if (a.Begin.Equals(strComps[i]))
                     {
                         a.Begin = newQ[i];
                     }
@@ -489,6 +531,7 @@ namespace Automata.Models
             transformedFiveTuple.Comps = strComps.ToArray();
             return transformedFiveTuple;
         }
+
         class Transition
         {
             public string Begin { get; set; }
@@ -497,12 +540,14 @@ namespace Automata.Models
             public int EdgeColorStatus { get; set; } = -1;
             public int NodeStatus { get; set; } = 0;
             public int EdgeTimesUsed { get; set; } = 0;
+
             public Transition() { }
             public Transition(string begin, string symbol, string end) {
                 Begin = begin;
                 Symbol = symbol;
                 End = end;
             }
+
             public bool Find(string begin, string symbol)
             {
                 return (Begin == begin && Symbol == symbol);

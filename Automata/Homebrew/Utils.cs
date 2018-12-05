@@ -103,35 +103,34 @@ namespace Automata.Homebrew
     public class StringArrayFormatter : IValueConverter
     {
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType != typeof(string))
+            if (targetType != typeof(string) || value == null)
                 return string.Empty;
 
             return string.Join("\n", (string[])value);
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return DependencyProperty.UnsetValue;
-        }
-    }
-
-    /*public class LengthConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
-            if (value is string text)
-            {
-                return text.Count(a => a == '\n') > 4;
-            }
-            return false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return DependencyProperty.UnsetValue;
         }
+    }
 
-    }*/
+    //public class LengthConverter : IValueConverter
+    //{
+    //    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        if (value is string text)
+    //        {
+    //            return string.IsNullOrEmpty(text);
+    //        }
+    //        return false;
+    //    }
+
+    //    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    //    {
+    //        return DependencyProperty.UnsetValue;
+    //    }
+    //}
 }
