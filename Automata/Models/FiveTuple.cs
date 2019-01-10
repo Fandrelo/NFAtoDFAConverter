@@ -262,14 +262,17 @@ namespace Automata.Models
             {
                 File.Delete(timeOnStart);
             }
-
-            Graph = new BitmapImage();
-            Graph.BeginInit();
-            Graph.CacheOption = BitmapCacheOption.OnLoad;
-            Graph.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + timeOnEnd, UriKind.Absolute);
-            Graph.EndInit();
-            Graph.Freeze();
-            File.Delete(timeOnEnd);
+            try
+            {
+                Graph = new BitmapImage();
+                Graph.BeginInit();
+                Graph.CacheOption = BitmapCacheOption.OnLoad;
+                Graph.UriSource = new Uri(AppDomain.CurrentDomain.BaseDirectory + timeOnEnd, UriKind.Absolute);
+                Graph.EndInit();
+                Graph.Freeze();
+                File.Delete(timeOnEnd);
+            }
+            catch (Exception) { }
         }
         /// <summary>
         /// Matriz AFD
