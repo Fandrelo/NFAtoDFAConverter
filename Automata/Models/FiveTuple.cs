@@ -114,9 +114,6 @@ namespace Automata.Models
             }
             return matches;
         }
-        /// <summary>
-        /// Matriz AFN
-        /// </summary>
         public void SetupOutputMatrix()
         {
             Matrix = new List<List<string>>();
@@ -274,9 +271,6 @@ namespace Automata.Models
             }
             catch (Exception) { }
         }
-        /// <summary>
-        /// Matriz AFD
-        /// </summary>
         public void SetupTransformedOutputMatrix()
         {
             Matrix = new List<List<string>>();
@@ -323,9 +317,6 @@ namespace Automata.Models
                 "i=" + I + "\n" +
                 "A={" + string.Join(",", A) + "}";
         }
-        /// <summary>
-        /// Validación
-        /// </summary>
         public bool IsInputValid(string input)
         {
             foreach (var a in W)
