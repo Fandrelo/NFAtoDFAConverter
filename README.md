@@ -1,6 +1,6 @@
 # NFAtoDFAConverter
 
-(Conversor AFN - AFD)
+(Conversor AFN a AFD)
 
 Written in C# WPF (MVVM) [.NET Framework].
 Convert a **Nondeterministic Finite Automaton** to **Deterministic Finite Automaton**.
